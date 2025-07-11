@@ -28,10 +28,10 @@ def run_pyspark_job():
         log.info("Initializing SparkSession...")
         spark = SparkSession.builder.config(conf=conf) \
         .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
-        .config("spark.hadoop.fs.s3a.access.key","root") \
-        .config("spark.hadoop.fs.s3a.secret.key", "tatacomm") \
+        .config("spark.hadoop.fs.s3a.access.key","minio") \
+        .config("spark.hadoop.fs.s3a.secret.key", "minio123") \
         .config("spark.hadoop.fs.s3a.path.style.access", "true") \
-        .config("spark.hadoop.fs.s3a.endpoint", "http://100.94.70.9:30978") \
+        .config("spark.hadoop.fs.s3a.endpoint", "http://100.94.70.9:31677") \
         .config("spark.network.timeout", "60s") \
         .config("spark.hadoop.fs.s3a.connection.timeout", "60000") \
         .config("spark.hadoop.fs.s3a.attempts.maximum", "3") \
