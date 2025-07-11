@@ -14,7 +14,7 @@ default_args = {
 
 S3_PATH = "s3a://airflow-test/sparkconnect/"
 
-SPARK_CONNECT_ENDPOINT = "spark://100.94.70.9:30816"  
+SPARK_CONNECT_ENDPOINT = "sc://100.94.70.9:30816"  
 
 def create_spark_session():
     logging.info("Creating Spark Connect session...")
