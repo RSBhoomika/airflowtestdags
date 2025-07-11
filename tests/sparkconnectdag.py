@@ -120,7 +120,7 @@ def delete_s3_path():
 
 
 with DAG(
-    dag_id='spark_connect_minio_test',
+    dag_id='spark_connect_minio_ingestion_sleep_delete',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete using Spark Connect',
     #schedule_interval=None,
