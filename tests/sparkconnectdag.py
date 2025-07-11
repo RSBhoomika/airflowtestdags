@@ -47,7 +47,8 @@ def upload_to_s3():
         spark = create_spark_session()
 
         log.info("Reading CSV file from local filesystem...")
-        df = spark.read.option("header", "true").csv("s3a://airflow-test/10k_data.csv")
+        #df = spark.read.option("header", "true").csv("s3a://airflow-test/10k_data.csv")
+        df = spark.read.option("header", "true").csv("/tmp/10k-data.csv")
         df.show(5)
         row_count = df.count()
         log.info(f"Number of rows: {row_count}")
@@ -122,7 +123,8 @@ with DAG(
     dag_id='spark_connect_minio_test',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete using Spark Connect',
-    schedule_interval=None,
+    #schedule_interval=None,
+    schedule_interval='*/5 * * * *',
     start_date=datetime(2025, 7, 11),
     catchup=False,
     tags=['pyspark', 's3', 'spark_connect'],
