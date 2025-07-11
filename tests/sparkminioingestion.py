@@ -89,7 +89,7 @@ def delete_s3_path():
 
 
 with DAG(
-    dag_id='pyspark_s3_upload_sleep_delete',
+    dag_id='pyspark_minio_upload_sleep_delete',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete',
     schedule_interval='*/5 * * * *',
