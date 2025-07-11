@@ -23,7 +23,7 @@ doris_port = conn.port
 # Target table and file details
 db_name = "test"
 table_name = "table1"
-file_path = "./10k_data.csv"
+file_path = "/opt/airflow/dags/repo/tests/10k_data.csv"
 
 # Define truncate function using mysql-connector-python
 def truncate_table():
