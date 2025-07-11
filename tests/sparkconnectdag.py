@@ -47,7 +47,7 @@ def upload_to_s3():
         spark = create_spark_session()
 
         log.info("Reading CSV file from local filesystem...")
-        df = spark.read.option("header", "true").csv("/opt/airflow/dags/repo/tests/10k_data.csv")
+        df = spark.read.option("header", "true").csv("s3a://airflow-test/10k_data.csv")
         df.show(5)
         row_count = df.count()
         log.info(f"Number of rows: {row_count}")
