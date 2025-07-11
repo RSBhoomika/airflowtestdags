@@ -16,7 +16,10 @@ S3_PATH = "s3a://airflow-test/sparkconnect/"
 SPARK_CONNECT_ENDPOINT = "sc://100.94.70.9:30816"  
 
 def create_spark_session():
+    os.environ['JAVA_HOME'] = '/opt/java/openjdk'
+    os.environ['PATH'] = f"{os.environ['JAVA_HOME']}/bin:" + os.environ['PATH']
     logging.info("Creating Spark Connect session...")
+    
     spark = SparkSession.builder \
         .remote(SPARK_CONNECT_ENDPOINT) \
         .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
