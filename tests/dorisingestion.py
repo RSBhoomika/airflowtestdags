@@ -46,7 +46,7 @@ def truncate_table():
 
 # Define DAG
 with DAG(
-    dag_id='streamload_then_truncate_dag',
+    dag_id='doris_streamload_sleep_truncate',
     default_args=default_args,
     schedule_interval='*/5 * * * *', 
     #schedule_interval=None,
