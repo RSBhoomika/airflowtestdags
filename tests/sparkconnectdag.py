@@ -13,7 +13,6 @@ default_args = {
 }
 
 S3_PATH = "s3a://airflow-test/sparkconnect/"
-
 SPARK_CONNECT_ENDPOINT = "sc://100.94.70.9:30816"  
 
 def create_spark_session():
@@ -29,11 +28,9 @@ def create_spark_session():
         .config("spark.hadoop.fs.s3a.connection.timeout", "60000") \
         .config("spark.hadoop.fs.s3a.attempts.maximum", "3") \
         .config("spark.hadoop.fs.s3a.retry.interval", "1000ms") \
+        .config("mapreduce.fileoutputcommitter.algorithm.version", "2") \
+        .config("fs.s3a.committer.staging.conflict-mode", "replace") \
         .getOrCreate()
-
-    hadoop_conf = spark._jsc.hadoopConfiguration()
-    hadoop_conf.set("mapreduce.fileoutputcommitter.algorithm.version", "2")
-    hadoop_conf.set("fs.s3a.committer.staging.conflict-mode", "replace")
 
     return spark
 
@@ -69,16 +66,46 @@ def delete_s3_path():
     try:
         spark = create_spark_session()
 
-        hadoop_conf = spark._jsc.hadoopConfiguration()
-        uri = spark._jvm.java.net.URI(S3_PATH)
-        fs = spark._jvm.org.apache.hadoop.fs.FileSystem.get(uri, hadoop_conf)
-        path = spark._jvm.org.apache.hadoop.fs.Path(S3_PATH)
+        # Delete path using S3 API or Hadoop FS command outside JVM
+        # Since Spark Connect does not support JVM access,
+        # use an alternative method like boto3 or minio client here
+        import boto3
+        from botocore.exceptions import ClientError
 
-        if fs.exists(path):
-            fs.delete(path, True)  # recursive delete
-            log.info(f"Deleted S3 path: {S3_PATH}")
+        # Configure boto3 client for MinIO
+        s3_client = boto3.client(
+            's3',
+            endpoint_url="http://100.94.70.9:31677",
+            aws_access_key_id="minio",
+            aws_secret_access_key="minio123",
+            region_name='us-east-1',
+            config=boto3.session.Config(signature_version='s3v4'),
+            use_ssl=False
+        )
+
+        # Extract bucket and key prefix from S3_PATH
+        # S3_PATH example: "s3a://airflow-test/sparkconnect/"
+        path_without_scheme = S3_PATH.replace("s3a://", "")
+        bucket, prefix = path_without_scheme.split('/', 1)
+
+        # List and delete all objects under the prefix
+        paginator = s3_client.get_paginator('list_objects_v2')
+        pages = paginator.paginate(Bucket=bucket, Prefix=prefix)
+
+        objects_to_delete = []
+        for page in pages:
+            if "Contents" in page:
+                for obj in page["Contents"]:
+                    objects_to_delete.append({'Key': obj['Key']})
+
+        if objects_to_delete:
+            delete_response = s3_client.delete_objects(
+                Bucket=bucket,
+                Delete={'Objects': objects_to_delete}
+            )
+            log.info(f"Deleted objects under {S3_PATH}: {delete_response}")
         else:
-            log.info(f"Path does not exist: {S3_PATH}")
+            log.info(f"No objects found to delete at {S3_PATH}")
 
         spark.stop()
 
@@ -91,7 +118,7 @@ with DAG(
     dag_id='spark_connect_minio_test',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete using Spark Connect',
-    schedule_interval= None,
+    schedule_interval=None,
     start_date=datetime(2025, 7, 11),
     catchup=False,
     tags=['pyspark', 's3', 'spark_connect'],
