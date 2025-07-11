@@ -91,7 +91,7 @@ with DAG(
     dag_id='pyspark_s3_upload_sleep_delete',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete',
-    schedule_interval=None,
+    schedule_interval='*/5 * * * *',
     start_date=datetime(2025, 7, 11),
     catchup=False,
     tags=['pyspark', 's3'],
