@@ -48,8 +48,8 @@ def truncate_table():
 with DAG(
     dag_id='streamload_then_truncate_dag',
     default_args=default_args,
-    #schedule_interval='*/5 * * * *', 
-    schedule_interval=None,
+    schedule_interval='*/5 * * * *', 
+    #schedule_interval=None,
     start_date=datetime(2025, 7, 11),
     end_date=datetime(2025, 7, 14),    # Stop after 3 days
     catchup=False,
