@@ -4,6 +4,7 @@ from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 from pyspark.sql import SparkSession
 import logging
+import os
 
 default_args = {
     'owner': 'airflow',
