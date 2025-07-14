@@ -48,7 +48,7 @@ def stream_load_gz_file():
         "Content-Encoding": "gzip",  # Tell Doris it's gzipped
         "Content-Type": "application/octet-stream",
         "Transfer-Encoding": "chunked",  # Enable streaming
-        "max_filter_ratio": "0.1",
+        "max_filter_ratio": "0.5",
         "label": f"stream_load_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
         "column_separator": ",",
         "columns": "CDRId,CDRVersion,CompanyIntID,CompanyName,InvoiceNumber,BusinessUnitLevel,BusinessUnit,BusinessUnitTAG,SharedBalanceUsed,DepartmentID,DepartmentName,CostCenterID,CostCenterName,AccountNumber,CustomerNumber,InvoicePeriod,TadigCode,GlobalTitle,MCC,MNC,Country,Operator,ProductId,MSISDN,IMSI,SIM,eUICCID,CallType,TrafficType,CallForwarding,DestinationName,DestinationType,CallingParty,CalledParty,APN,IPAddress,CallDate,CallTime,Duration,BillableDuration,Bytes,BalanceTypeID,ZoneID,Zone,TotalRetailCharge,WholesaleTAG,MappedIMSI,PropositionAssociated,CommercialOfferPropositionUsed,ChargeNumber,Threshold,ActualUsage,ZoneNameTo,RetailDuration,UsedId,UsedFrom,CELLID,UEIP,UsedType,BillCycleDay,UsedNumber,Device,IMEI,RatingGroupId,PlanName",
