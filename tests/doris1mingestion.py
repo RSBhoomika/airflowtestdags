@@ -46,7 +46,7 @@ file_path = "/opt/airflow/dags/repo/tests/test-one-million-data.csv.gz"
 
 # Define DAG
 with DAG(
-    dag_id='doris_streamload_sleep_truncate',
+    dag_id='doris_streamload_1m',
     default_args=default_args,
     schedule_interval='*/5 * * * *', 
     #schedule_interval=None,
