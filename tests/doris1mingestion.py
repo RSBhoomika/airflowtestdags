@@ -1,68 +1,87 @@
-# import boto3
-# import requests
-# from airflow import DAG
-# from airflow.operators.python import PythonOperator
-# from airflow.hooks.base import BaseHook
-# from datetime import datetime
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
+from airflow.hooks.base import BaseHook
+from datetime import datetime
 
-# minio_endpoint = "http://100.94.70.9:31677"
-# minio_access_key = "minio"
-# minio_secret_key = "minio123"
-# s3_bucket = "airflow-test"
-# s3_key = "TrafficData.csv"
+import mysql.connector
 
-# conn = BaseHook.get_connection("doris_conn")
-# doris_user = conn.login
-# doris_password = conn.password
-# doris_host = conn.host
-# doris_port = conn.port
+# Default DAG arguments
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'retries': 0,
+}
 
-# def stream_load_minio_to_doris():
-#     s3 = boto3.client(
-#         's3',
-#         endpoint_url=minio_endpoint,
-#         aws_access_key_id=minio_access_key,
-#         aws_secret_access_key=minio_secret_key,
+# Get Doris (StarRocks) connection details from Airflow connection
+conn = BaseHook.get_connection("doris_conn")
+doris_user = conn.login
+doris_password = conn.password
+doris_host = conn.host
+doris_port = conn.port
+
+# Target table and file details
+db_name = "test"
+table_name = "table1"
+file_path = "/opt/airflow/dags/repo/tests/test-one-million-data.csv.gz"
+
+# Define truncate function using mysql-connector-python
+# def truncate_table():
+#     print("Connecting to Doris MySQL-compatible endpoint...")
+#     connection = mysql.connector.connect(
+#         host=doris_host,
+#         port="31115",
+#         user=doris_user,
+#         password=doris_password,
+#         database=db_name
 #     )
     
-#     # Get streaming body of the object (do NOT read fully)
-#     s3_obj = s3.get_object(Bucket=s3_bucket, Key=s3_key)
-#     stream_body = s3_obj['Body']
-    
-#     url = f"http://{doris_host}:{doris_port}/api/test/table1/_stream_load"
-#     headers = {
-#         "Expect": "100-continue",
-#         "max_filter_ratio": "0.1",
-#         "label": f"stream_load_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
-#         "column_separator": ",",
-#         "columns": "CDRId,CDRVersion,CompanyIntID,CompanyName,InvoiceNumber,BusinessUnitLevel,BusinessUnit,BusinessUnitTAG,SharedBalanceUsed,DepartmentID,DepartmentName,CostCenterID,CostCenterName,AccountNumber,CustomerNumber,InvoicePeriod,TadigCode,GlobalTitle,MCC,MNC,Country,Operator,ProductId,MSISDN,IMSI,SIM,eUICCID,CallType,TrafficType,CallForwarding,DestinationName,DestinationType,CallingParty,CalledParty,APN,IPAddress,CallDate,CallTime,Duration,BillableDuration,Bytes,BalanceTypeID,ZoneID,Zone,TotalRetailCharge,WholesaleTAG,MappedIMSI,PropositionAssociated,CommercialOfferPropositionUsed,ChargeNumber,Threshold,ActualUsage,ZoneNameTo,RetailDuration,UsedId,UsedFrom,CELLID,UEIP,UsedType,BillCycleDay,UsedNumber,Device,IMEI,RatingGroupId,PlanName",
-#         "skip_header": "0",
-#     }
-    
-#     # Use streaming upload, passing the boto3 stream as data
-#     response = requests.put(
-#         url,
-#         headers=headers,
-#         auth=(doris_user, doris_password),
-#         data=stream_body,   # stream_body supports .read()
-#         timeout=300,
-#         stream=True
-#     )
-    
-#     if response.status_code != 200:
-#         raise Exception(f"Stream load failed: {response.text}")
-#     print("Stream load successful.")
+#     cursor = connection.cursor()
+#     print(f"Truncating {db_name}.{table_name}")
+#     cursor.execute(f"TRUNCATE TABLE {db_name}.{table_name};")
+#     connection.commit()
+#     print("Table truncated successfully.")
+#     cursor.close()
+#     connection.close()
 
-# with DAG(
-#     dag_id='doris_streamload_direct_stream',
-#     default_args={'owner': 'airflow', 'depends_on_past': False, 'retries': 0},
-#     schedule_interval=None,
-#     start_date=datetime(2025, 7, 11),
-#     catchup=False,
-#     tags=['doris', 'minio', 'stream_load']
-# ) as dag:
+# Define DAG
+with DAG(
+    dag_id='doris_streamload_sleep_truncate',
+    default_args=default_args,
+    schedule_interval='*/5 * * * *', 
+    #schedule_interval=None,
+    start_date=datetime(2025, 7, 11),
+    #end_date=datetime(2025, 7, 14),    # Stop after 3 days
+    catchup=False,
+    description='Truncate Doris table and stream load every 5 mins for 3 days',
+    tags=['doris', 'stream_load'],
+) as dag:
 
-#     task = PythonOperator(
-#         task_id='stream_load_direct_from_minio',
-#         python_callable=stream_load_minio_to_doris,
-#     )
+    # Truncate task
+    # truncate_task = PythonOperator(
+    #     task_id='truncate_table',
+    #     python_callable=truncate_table
+    # )
+
+    # Stream load task using curl
+    stream_load_task = BashOperator(
+        task_id='stream_load_to_doris',
+        bash_command=f"""
+        curl --location-trusted -u {doris_user}:{doris_password} -T {file_path} \\
+          -H "Expect: 100-continue" \\
+          -H "max_filter_ratio: 0.1" \\
+          -H "label: stream_load_{{{{ ts_nodash }}}}" \\
+          -H "column_separator: ," \\
+          -H "columns: CDRId,CDRVersion,CompanyIntID,CompanyName,InvoiceNumber,BusinessUnitLevel,BusinessUnit,BusinessUnitTAG,SharedBalanceUsed,DepartmentID,DepartmentName,CostCenterID,CostCenterName,AccountNumber,CustomerNumber,InvoicePeriod,TadigCode,GlobalTitle,MCC,MNC,Country,Operator,ProductId,MSISDN,IMSI,SIM,eUICCID,CallType,TrafficType,CallForwarding,DestinationName,DestinationType,CallingParty,CalledParty,APN,IPAddress,CallDate,CallTime,Duration,BillableDuration,Bytes,BalanceTypeID,ZoneID,Zone,TotalRetailCharge,WholesaleTAG,MappedIMSI,PropositionAssociated,CommercialOfferPropositionUsed,ChargeNumber,Threshold,ActualUsage,ZoneNameTo,RetailDuration,UsedId,UsedFrom,CELLID,UEIP,UsedType,BillCycleDay,UsedNumber,Device,IMEI,RatingGroupId,PlanName" \\
+          -H "skip_header: 0" \\
+          -H "compress_type: gz" \\
+          http://{doris_host}:{doris_port}/api/{db_name}/{table_name}/_stream_load
+        """
+    )
+
+    # sleep_task = BashOperator(
+    #   task_id='sleep_20_seconds',
+    #   bash_command='sleep 10',
+    # )
+
+    stream_load_task 
