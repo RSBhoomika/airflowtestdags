@@ -17,7 +17,7 @@ def emit_lineage_by_query(script_name: str):
     
     database_service = metadata.get_by_name(
         entity=DatabaseService,
-        fqn="demo_environment"
+        fqn="doris"
     )
 
     script_path = f"/opt/airflow/dags/repo/tests/scripts/{script_name}.sql"
