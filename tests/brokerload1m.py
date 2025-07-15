@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
+import logging
 
 # Default DAG arguments
 default_args = {
@@ -12,7 +13,7 @@ default_args = {
 doris_user = "test_user"
 doris_password = "password"
 doris_host = "100.94.70.9"
-doris_port = "31161"
+doris_port = 31115  # Doris FE MySQL-compatible port
 
 db_name = "test"
 table_name = "table2"
@@ -27,40 +28,47 @@ broker_props = {
 }
 broker_props_sql = ", ".join([f'"{k}"="{v}"' for k, v in broker_props.items()])
 
-load_sql = f'''
-LOAD LABEL {db_name}.airflow_broker_load_{{{{ ts_nodash }}}}
-(
-    DATA INFILE("{file_path}")
-    INTO TABLE {table_name}
-    FORMAT AS "csv"
-    (COLUMNS TERMINATED BY ",")
-)
-WITH BROKER "{broker_name}"
-(
-    {broker_props_sql}
-)
-PROPERTIES
-(
-    "timeout" = "600",
-    "max_filter_ratio" = "0.1"
-    -- "compress_type" = "GZ"  # Remove or comment out for plain CSV
-);
-'''
-
-def run_broker_load():
+def run_broker_load(**context):
     import mysql.connector
-    connection = mysql.connector.connect(
-        host=doris_host,
-        port=31115,  # Doris FE MySQL-compatible port
-        user=doris_user,
-        password=doris_password,
-        database=db_name
+    ts_nodash = context['ts_nodash'] if 'ts_nodash' in context else datetime.now().strftime('%Y%m%dT%H%M%S')
+    label = f"{db_name}.airflow_broker_load_{ts_nodash}"
+    load_sql = f'''
+    LOAD LABEL {label}
+    (
+        DATA INFILE(\"{file_path}\")
+        INTO TABLE {table_name}
+        FORMAT AS \"csv\"
+        (COLUMNS TERMINATED BY ",")
     )
-    cursor = connection.cursor()
-    cursor.execute(load_sql)
-    connection.commit()
-    cursor.close()
-    connection.close()
+    WITH BROKER \"{broker_name}\"
+    (
+        {broker_props_sql}
+    )
+    PROPERTIES
+    (
+        \"timeout\" = \"600\",
+        \"max_filter_ratio\" = \"0.1\"
+        -- \"compress_type\" = \"GZ\"
+    );
+    '''
+    logging.info(f"Submitting Broker Load SQL to Doris: {load_sql}")
+    try:
+        connection = mysql.connector.connect(
+            host=doris_host,
+            port=doris_port,
+            user=doris_user,
+            password=doris_password,
+            database=db_name
+        )
+        cursor = connection.cursor()
+        cursor.execute(load_sql)
+        connection.commit()
+        cursor.close()
+        connection.close()
+        logging.info("Broker Load submitted successfully.")
+    except Exception as e:
+        logging.error(f"Error during Broker Load: {e}")
+        raise
 
 with DAG(
     dag_id='doris_broker_load_1m',
