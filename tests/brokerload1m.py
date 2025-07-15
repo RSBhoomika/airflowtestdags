@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.operators.mysql_operator import MySqlOperator
+from airflow.providers.mysql.operators.mysql import MySqlOperator
 from datetime import datetime
 
 # Default DAG arguments
