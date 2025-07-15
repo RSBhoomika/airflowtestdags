@@ -26,7 +26,7 @@ doris_port = "31161"
 
 # Target table and file details
 db_name = "test"
-table_name = "table1"
+table_name = "table2"
 #file_path = "/opt/airflow/dags/repo/tests/test-one-million-data.csv.gz"
 file_path = "/opt/airflow/dags/repo/tests/one-million-data.csv"
 
@@ -54,8 +54,8 @@ file_path = "/opt/airflow/dags/repo/tests/one-million-data.csv"
 with DAG(
     dag_id='doris_streamload_1m',
     default_args=default_args,
-    schedule_interval='*/5 * * * *', 
-    #schedule_interval=None,
+    #schedule_interval='*/5 * * * *', 
+    schedule_interval=None,
     start_date=datetime(2025, 7, 11),
     #end_date=datetime(2025, 7, 14),    # Stop after 3 days
     catchup=False,
