@@ -27,8 +27,8 @@ doris_port = "31161"
 # Target table and file details
 db_name = "test"
 table_name = "table2"
-#file_path = "/opt/airflow/dags/repo/tests/test-one-million-data.csv.gz"
-file_path = "/opt/airflow/dags/repo/tests/one-million-data.csv"
+file_path = "/opt/airflow/dags/repo/tests/test-one-million-data.csv.gz"
+#file_path = "/opt/airflow/dags/repo/tests/one-million-data.csv"
 
 
 # Define truncate function using mysql-connector-python
@@ -79,6 +79,7 @@ with DAG(
           -H "column_separator: ," \\
           -H "columns: CDRId,CDRVersion,CompanyIntID,CompanyName,InvoiceNumber,BusinessUnitLevel,BusinessUnit,BusinessUnitTAG,SharedBalanceUsed,DepartmentID,DepartmentName,CostCenterID,CostCenterName,AccountNumber,CustomerNumber,InvoicePeriod,TadigCode,GlobalTitle,MCC,MNC,Country,Operator,ProductId,MSISDN,IMSI,SIM,eUICCID,CallType,TrafficType,CallForwarding,DestinationName,DestinationType,CallingParty,CalledParty,APN,IPAddress,CallDate,CallTime,Duration,BillableDuration,Bytes,BalanceTypeID,ZoneID,Zone,TotalRetailCharge,WholesaleTAG,MappedIMSI,PropositionAssociated,CommercialOfferPropositionUsed,ChargeNumber,Threshold,ActualUsage,ZoneNameTo,RetailDuration,UsedId,UsedFrom,CELLID,UEIP,UsedType,BillCycleDay,UsedNumber,Device,IMEI,RatingGroupId,PlanName" \\
           -H "skip_header: 0" \\
+          -H "compress_type: gz"
           http://{doris_host}:{doris_port}/api/{db_name}/{table_name}/_stream_load
         """
     )
