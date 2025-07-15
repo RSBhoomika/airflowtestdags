@@ -25,8 +25,8 @@ default_args = {
     "start_date": datetime(2025, 1, 1),
     "retries": 0,
     "depends_on_past": False,
-    "on_failure_callback": failure_callback,
-    "on_success_callback": success_callback,
+    # "on_failure_callback": failure_callback,
+    #"on_success_callback": success_callback,
 }
 
 def download_csv_from_s3():
