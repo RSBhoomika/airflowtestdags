@@ -1,10 +1,10 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime
-import time
+from datetime import datetime, timedelta
 import pymysql
+import time
 
-def load_data(label, **kwargs):
+def load_data():
     conn = pymysql.connect(
         host="100.94.70.9",
         port=31115,
@@ -13,8 +13,8 @@ def load_data(label, **kwargs):
         database="test"
     )
     cursor = conn.cursor()
-    query = f"""
-    LOAD LABEL test.{label} (
+    query = """
+    LOAD LABEL test.table4567 (
         DATA INFILE('s3://airflow-test/TrafficData.csv')
         INTO TABLE table2
         COLUMNS TERMINATED BY ','
@@ -52,21 +52,15 @@ def load_data(label, **kwargs):
     print(f"Executing query: {query}")
     start_time = time.time()
     cursor.execute(query)
-    try:
-        result = cursor.fetchall()
-    except Exception:
-        result = None
+    result = cursor.fetchall()
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time:.6f} seconds")
+    time.sleep(20)  # Wait for 20 seconds
     cursor.close()
     conn.close()
 
-def wait_20_seconds():
-    print("Waiting for 20 seconds...")
-    time.sleep(20)
-
-def check_load_status(label, **kwargs):
+def check_load():
     conn = pymysql.connect(
         host="100.94.70.9",
         port=31115,
@@ -75,46 +69,45 @@ def check_load_status(label, **kwargs):
         database="test"
     )
     cursor = conn.cursor()
-    query = f"show load from test where LABEL ='{label}';"
-    print(f"Executing query: {query}")
-    cursor.execute(query)
-    result = cursor.fetchall()
-    print(f"Query Result: {result}")
+    query_delete = """show load from test where LABEL ='table4567';;"""
+    print(f"Executing query: {query_delete}")
+    cursor.execute(query_delete)
+    result_load = cursor.fetchall()
+    print(f"Query Result: {result_load}")
     cursor.close()
     conn.close()
 
 default_args = {
-    'start_date': datetime(2024, 1, 1),
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
 }
 
 dag = DAG(
-    'doris_broker_load_1m',
+    'starrocks_load_dag',
     default_args=default_args,
-    schedule_interval=None,  # Run on demand
+    description='Load data into StarRocks and check status',
+    schedule_interval=None,
+    start_date=datetime(2024, 1, 1),
     catchup=False,
-    description='Load data into StarRocks from S3 and check status',
 )
-
-unique_label = 'load_{{ ts_nodash }}'
 
 load_task = PythonOperator(
     task_id='load_data',
     python_callable=load_data,
-    op_kwargs={'label': unique_label},
     dag=dag,
 )
 
-wait_task = PythonOperator(
-    task_id='wait_20_seconds',
-    python_callable=wait_20_seconds,
+check_task = PythonOperator(
+    task_id='check_load',
+    python_callable=check_load,
     dag=dag,
 )
 
-check_status_task = PythonOperator(
-    task_id='check_load_status',
-    python_callable=check_load_status,
-    op_kwargs={'label': unique_label},
-    dag=dag,
-)
+sleep_task = BashOperator(
+      task_id='sleep_20_seconds',
+      bash_command='sleep 10',
+    )
 
-load_task >> wait_task >> check_status_task 
+load_task >> sleep_task >> check_task 
