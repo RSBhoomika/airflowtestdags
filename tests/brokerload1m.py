@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 import pymysql
 import time
@@ -85,7 +86,7 @@ default_args = {
 }
 
 dag = DAG(
-    'starrocks_load_dag',
+    'doris_broker_load_1m',
     default_args=default_args,
     description='Load data into StarRocks and check status',
     schedule_interval=None,
