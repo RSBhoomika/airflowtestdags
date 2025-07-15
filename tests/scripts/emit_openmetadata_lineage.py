@@ -21,7 +21,7 @@ def emit_column_lineage_to_om():
 
     # FQNs
     source_fqn = "openmetadata-minio.openmetadata.minio-source/sales"
-    target_fqn = "demo_environment.default.demo_database.raw_sales"
+    target_fqn = "doris.default.demo_database.raw_sales"
 
     # Fetch entities
     source = metadata.get_by_name(entity=Container, fqn=source_fqn)
