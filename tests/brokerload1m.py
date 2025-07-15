@@ -95,7 +95,7 @@ dag = DAG(
     description='Load data into StarRocks from S3 and check status',
 )
 
-unique_label = '{{ run_id }}'
+unique_label = '{{ ts_nodash }}'
 
 load_task = PythonOperator(
     task_id='load_data',
