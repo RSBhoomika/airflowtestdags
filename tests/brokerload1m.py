@@ -1,91 +1,116 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
-import logging
+import time
+import pymysql
 
-# Default DAG arguments
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'retries': 0,
-}
-
-doris_user = "test_user"
-doris_password = "password"
-doris_host = "100.94.70.9"
-doris_port = 31115  # Doris FE MySQL-compatible port
-
-db_name = "test"
-table_name = "table2"
-file_path = "s3://airflow-test/TrafficData.csv"
-
-column_list = "CDRId,CDRVersion,CompanyIntID,CompanyName,InvoiceNumber,BusinessUnitLevel,BusinessUnit,BusinessUnitTAG,SharedBalanceUsed,DepartmentID,DepartmentName,CostCenterID,CostCenterName,AccountNumber,CustomerNumber,InvoicePeriod,TadigCode,GlobalTitle,MCC,MNC,Country,Operator,ProductId,MSISDN,IMSI,SIM,eUICCID,CallType,TrafficType,CallForwarding,DestinationName,DestinationType,CallingParty,CalledParty,APN,IPAddress,CallDate,CallTime,Duration,BillableDuration,Bytes,BalanceTypeID,ZoneID,Zone,TotalRetailCharge,WholesaleTAG,MappedIMSI,PropositionAssociated,CommercialOfferPropositionUsed,ChargeNumber,Threshold,ActualUsage,ZoneNameTo,RetailDuration,UsedId,UsedFrom,CELLID,UEIP,UsedType,BillCycleDay,UsedNumber,Device,IMEI,RatingGroupId,PlanName"
-
-# Broker Load SQL for MinIO (S3-compatible)
-broker_name = "s3_broker"
-broker_props = {
-    "aws_access_key": "minio",
-    "aws_secret_key": "minio123",
-    "endpoint": "http://100.94.70.9:31677"
-}
-broker_props_sql = ", ".join([f'"{k}"="{v}"' for k, v in broker_props.items()])
-
-def run_broker_load(**context):
-    import mysql.connector
-    ts_nodash = context['ts_nodash'] if 'ts_nodash' in context else datetime.now().strftime('%Y%m%dT%H%M%S')
-    label = f"{db_name}.airflow_broker_load_{ts_nodash}"
-    load_sql = f'''
-    LOAD LABEL {label}
-    (
-        DATA INFILE(\"{file_path}\")
-        INTO TABLE {table_name}
-        FORMAT AS \"csv\"
-        COLUMNS TERMINATED BY ","
-        ({column_list})
+def load_data():
+    conn = pymysql.connect(
+        host="100.94.70.9",
+        port=31115,
+        user="test_user",
+        password="password",
+        database="test"
     )
-    WITH BROKER \"{broker_name}\"
-    (
-        {broker_props_sql}
+    cursor = conn.cursor()
+    query = """
+    LOAD LABEL test.table12323 (
+        DATA INFILE('s3://one-million-data/TrafficData.csv')
+        INTO TABLE table2
+        COLUMNS TERMINATED BY ','
+        (CDRId, CDRVersion, CompanyIntID, CompanyName, InvoiceNumber, BusinessUnitLevel, BusinessUnit, BusinessUnitTAG, SharedBalanceUsed,
+        DepartmentID, DepartmentName, CostCenterID, CostCenterName, AccountNumber, CustomerNumber, InvoicePeriod, TadigCode, GlobalTitle,
+        MCC, MNC, Country, Operator, ProductId, MSISDN, IMSI, SIM, eUICCID, CallType, TrafficType, CallForwarding, DestinationName,
+        DestinationType, CallingParty, CalledParty, APN, IPAddress, CallDate, CallTime, Duration, BillableDuration, Bytes, BalanceTypeID,
+        ZoneID, Zone, TotalRetailCharge, WholesaleTAG, MappedIMSI, PropositionAssociated, CommercialOfferPropositionUsed, ChargeNumber,
+        Threshold, ActualUsage, ZoneNameTo, RetailDuration, UsedId, UsedFrom, CELLID, UEIP, UsedType, BillCycleDay, UsedNumber, Device,
+        IMEI, RatingGroupId, PlanName)
     )
-    PROPERTIES
-    (
-        \"timeout\" = \"600\",
-        \"max_filter_ratio\" = \"0.1\"
-        -- \"compress_type\" = \"GZ\"
+    WITH S3 (
+        "s3.endpoint" = "http://100.94.70.9:31677",
+        "s3.access_key" = "minio",
+        "s3.secret_key" = "minio123",
+        "format" = "csv",
+        "s3.use_aws_sdk_default_behavior" = "false",
+        "s3.region" = "us-east-1",
+        "enable_ssl" = "false",
+        "use_instance_profile" = "false",
+        "use_path_style_access" = "true",
+        "s3.multi_part_size" = "512MB",
+        "s3.request_timeout_ms" = "120000"
+    )
+    PROPERTIES (
+        "timeout" = "21600",
+        "max_filter_ratio" = "0.1",
+        "strict_mode" = "false",
+        "load_parallelism" = "16",
+        "send_batch_parallelism" = "4",
+        "skip_lines" = "0",
+        "priority" = "HIGH"
     );
-    '''
-    logging.info(f"Submitting Broker Load SQL to Doris: {load_sql}")
+    """
+    print(f"Executing query: {query}")
+    start_time = time.time()
+    cursor.execute(query)
     try:
-        connection = mysql.connector.connect(
-            host=doris_host,
-            port=doris_port,
-            user=doris_user,
-            password=doris_password,
-            database=db_name
-        )
-        cursor = connection.cursor()
-        cursor.execute(load_sql)
-        connection.commit()
-        cursor.close()
-        connection.close()
-        logging.info("Broker Load submitted successfully.")
-    except Exception as e:
-        logging.error(f"Error during Broker Load: {e}")
-        raise
+        result = cursor.fetchall()
+    except Exception:
+        result = None
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time:.6f} seconds")
+    cursor.close()
+    conn.close()
 
-with DAG(
-    dag_id='doris_broker_load_1m',
-    default_args=default_args,
-    schedule_interval=None,
-    start_date=datetime(2025, 7, 11),
-    catchup=False,
-    description='Broker Load to Doris from MinIO',
-    tags=['doris', 'broker_load'],
-) as dag:
+def wait_20_seconds():
+    print("Waiting for 20 seconds...")
+    time.sleep(20)
 
-    broker_load_task = PythonOperator(
-        task_id='broker_load_to_doris',
-        python_callable=run_broker_load
+def check_load_status():
+    conn = pymysql.connect(
+        host="10.233.4.231",
+        port=9030,
+        user="test_user",
+        password="password",
+        database="test"
     )
+    cursor = conn.cursor()
+    query = "show load from test where LABEL ='table12323';"
+    print(f"Executing query: {query}")
+    cursor.execute(query)
+    result = cursor.fetchall()
+    print(f"Query Result: {result}")
+    cursor.close()
+    conn.close()
 
-    broker_load_task 
+default_args = {
+    'start_date': datetime(2024, 1, 1),
+}
+
+dag = DAG(
+    'doris_broker_load_1m',
+    default_args=default_args,
+    schedule_interval=None,  # Run on demand
+    catchup=False,
+    description='Load data into StarRocks from S3 and check status',
+)
+
+load_task = PythonOperator(
+    task_id='load_data',
+    python_callable=load_data,
+    dag=dag,
+)
+
+wait_task = PythonOperator(
+    task_id='wait_20_seconds',
+    python_callable=wait_20_seconds,
+    dag=dag,
+)
+
+check_status_task = PythonOperator(
+    task_id='check_load_status',
+    python_callable=check_load_status,
+    dag=dag,
+)
+
+load_task >> wait_task >> check_status_task 
