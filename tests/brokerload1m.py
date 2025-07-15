@@ -15,7 +15,7 @@ def load_data():
     )
     cursor = conn.cursor()
     query = """
-    LOAD LABEL test.table6789 (
+    LOAD LABEL test.table7777 (
         DATA INFILE('s3://airflow-test/TrafficData.csv')
         INTO TABLE table2
         COLUMNS TERMINATED BY ','
@@ -70,7 +70,7 @@ def check_load():
         database="test"
     )
     cursor = conn.cursor()
-    query_delete = """show load from test where LABEL ='table6789';;"""
+    query_delete = """show load from test where LABEL ='table7777';;"""
     print(f"Executing query: {query_delete}")
     cursor.execute(query_delete)
     result_load = cursor.fetchall()
