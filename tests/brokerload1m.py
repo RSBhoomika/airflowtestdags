@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.providers.mysql.operators.mysql import MySqlOperator
+from airflow.operators.python import PythonOperator
 from datetime import datetime
 
 # Default DAG arguments
@@ -47,6 +47,21 @@ PROPERTIES
 );
 '''
 
+def run_broker_load():
+    import mysql.connector
+    connection = mysql.connector.connect(
+        host=doris_host,
+        port=31115,  # Doris FE MySQL-compatible port
+        user=doris_user,
+        password=doris_password,
+        database=db_name
+    )
+    cursor = connection.cursor()
+    cursor.execute(load_sql)
+    connection.commit()
+    cursor.close()
+    connection.close()
+
 with DAG(
     dag_id='doris_broker_load_1m',
     default_args=default_args,
@@ -57,15 +72,9 @@ with DAG(
     tags=['doris', 'broker_load'],
 ) as dag:
 
-    broker_load_task = MySqlOperator(
+    broker_load_task = PythonOperator(
         task_id='broker_load_to_doris',
-        sql=load_sql,
-        autocommit=True,
-        host=doris_host,
-        user=doris_user,
-        password=doris_password,
-        database=db_name,
-        port=31115,  # Use Doris FE MySQL-compatible port
+        python_callable=run_broker_load
     )
 
     broker_load_task 
