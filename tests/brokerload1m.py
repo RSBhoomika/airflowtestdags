@@ -15,7 +15,7 @@ def load_data(label, **kwargs):
     cursor = conn.cursor()
     query = f"""
     LOAD LABEL test.{label} (
-        DATA INFILE('s3://one-million-data/TrafficData.csv')
+        DATA INFILE('s3://airflow-test/TrafficData.csv')
         INTO TABLE table2
         COLUMNS TERMINATED BY ','
         (CDRId, CDRVersion, CompanyIntID, CompanyName, InvoiceNumber, BusinessUnitLevel, BusinessUnit, BusinessUnitTAG, SharedBalanceUsed,
