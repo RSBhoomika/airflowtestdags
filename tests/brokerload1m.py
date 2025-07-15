@@ -4,7 +4,7 @@ from datetime import datetime
 import time
 import pymysql
 
-def load_data():
+def load_data(label, **kwargs):
     conn = pymysql.connect(
         host="100.94.70.9",
         port=31115,
@@ -13,8 +13,8 @@ def load_data():
         database="test"
     )
     cursor = conn.cursor()
-    query = """
-    LOAD LABEL test.table12323 (
+    query = f"""
+    LOAD LABEL test.{label} (
         DATA INFILE('s3://one-million-data/TrafficData.csv')
         INTO TABLE table2
         COLUMNS TERMINATED BY ','
@@ -66,16 +66,16 @@ def wait_20_seconds():
     print("Waiting for 20 seconds...")
     time.sleep(20)
 
-def check_load_status():
+def check_load_status(label, **kwargs):
     conn = pymysql.connect(
-        host="10.233.4.231",
-        port=9030,
+        host="100.94.70.9",
+        port=31115,
         user="test_user",
         password="password",
         database="test"
     )
     cursor = conn.cursor()
-    query = "show load from test where LABEL ='table12323';"
+    query = f"show load from test where LABEL ='{label}';"
     print(f"Executing query: {query}")
     cursor.execute(query)
     result = cursor.fetchall()
@@ -95,9 +95,12 @@ dag = DAG(
     description='Load data into StarRocks from S3 and check status',
 )
 
+unique_label = '{{ run_id }}'
+
 load_task = PythonOperator(
     task_id='load_data',
     python_callable=load_data,
+    op_kwargs={'label': unique_label},
     dag=dag,
 )
 
@@ -110,6 +113,7 @@ wait_task = PythonOperator(
 check_status_task = PythonOperator(
     task_id='check_load_status',
     python_callable=check_load_status,
+    op_kwargs={'label': unique_label},
     dag=dag,
 )
 
