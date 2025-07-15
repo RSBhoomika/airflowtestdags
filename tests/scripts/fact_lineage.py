@@ -5,11 +5,11 @@ def emit_lineage_by_query(script_name: str):
     from metadata.generated.schema.entity.services.databaseService import DatabaseService
     import os
     server_config = OpenMetadataConnection(
-        hostPort="http://35.203.40.184:31291/api",
+        hostPort="http://100.94.70.9:32325/api",
         authProvider="openmetadata",
         securityConfig=OpenMetadataJWTClientConfig(
-            jwtToken="eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImF1dG9waWxvdGFwcGxpY2F0aW9uYm90Iiwicm9sZXMiOltudWxsXSwiZW1haWwiOiJhdXRvcGlsb3RhcHBsaWNhdGlvbmJvdEBvcGVubWV0YWRhdGEub3JnIiwiaXNCb3QiOnRydWUsInRva2VuVHlwZSI6IkJPVCIsImlhdCI6MTc1MDg1NTYyMywiZXhwIjpudWxsfQ.LFVF6sq6yoXv-1uZSpPXymLuzutPW_V5NEZE446LCTSGkgXkQyTi4fN0LTjJcgMqth2I79cW9A0ue7dMIkW3_sKqYHYeCSb8dpSjzmjk-x_RYE1yRb6y9Sd6FigZhmrQHlVeoaun9NO9N6bYgXagXROqpnt94yqQi7ZwXV4nV-3Jd99ueHtsLll0pH9vEPI5eBeD1YwHaAEZyhBZhOGIhlb2PppbBL4wfMScD-SftgSGYvNEVqQvuvgIqQAU2PVTYChKLyhQW4m51rf1poHT7gtwJyLagYfEXbxOWg6gWoMNSCQeiuAPJdV7Tu5VqW73eI1pe5KYT742tNM9u4QRqw"
-        ),
+            jwtToken="eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImF1dG9waWxvdGFwcGxpY2F0aW9uYm90Iiwicm9sZXMiOltudWxsXSwiZW1haWwiOiJhdXRvcGlsb3RhcHBsaWNhdGlvbmJvdEBvcGVubWV0YWRhdGEub3JnIiwiaXNCb3QiOnRydWUsInRva2VuVHlwZSI6IkJPVCIsImlhdCI6MTc1MjU4MDg4OCwiZXhwIjpudWxsfQ.ThRsRbcJLTS0lLeik1zENF8QvCKx4H1XXuFystGkWT-OkWCMub9mHoSahJJv8P-A6ONELberfcqsduVvTIkMmbQNGGfyRgoKEKhi01--iB2nOFsqlWDjK7WpTpaHmaAUdK3RsSuTg8jSeDYpMfXn_9CqlTto-XGEweRCPkVAYeccvUZ5x9XgKbXgYG4T6Wh6CGwtKhErta6dHv-ngxNYHoOFMheIsUqG1HOSVcjYR97q_rg4a4AkSwt98VvcA3sv_nnG5aJr4UDpu3z8NMSZjKZ-CXJHkHnF_mLM51P2uAKXIYQYcaN1yqrTlxiecKiHNyYC39aXPXVJDKtRyKIcGA"
+            ),
     )
 
     metadata = OpenMetadata(server_config)
@@ -20,7 +20,7 @@ def emit_lineage_by_query(script_name: str):
         fqn="demo_environment"
     )
 
-    script_path = f"/opt/airflow/dags/repo/Airflow/MOVE/Dags/scripts/{script_name}.sql"
+    script_path = f"/opt/airflow/dags/repo/tests/scripts/{script_name}.sql"
 
     if not os.path.exists(script_path):
         raise FileNotFoundError(f"SQL script not found: {script_path}")
