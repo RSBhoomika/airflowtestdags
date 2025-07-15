@@ -48,7 +48,7 @@ def load_csv_to_doris(**context):
 
     doris.run_sql(f"TRUNCATE TABLE demo_database.{table_name}")
     df = pd.read_csv(csv_path)
-    rows_loaded, rows_rejected = doris.stream_load(df, f"demo_database.{table_name}")  # Unpack result from stream_load
+    rows_loaded, rows_rejected = doris.stream_load(df,table_name)  # Unpack result from stream_load
 
     return {
         "rows_loaded": rows_loaded,
