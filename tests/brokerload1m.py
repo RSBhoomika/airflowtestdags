@@ -19,6 +19,8 @@ db_name = "test"
 table_name = "table2"
 file_path = "s3://airflow-test/TrafficData.csv"
 
+column_list = "CDRId,CDRVersion,CompanyIntID,CompanyName,InvoiceNumber,BusinessUnitLevel,BusinessUnit,BusinessUnitTAG,SharedBalanceUsed,DepartmentID,DepartmentName,CostCenterID,CostCenterName,AccountNumber,CustomerNumber,InvoicePeriod,TadigCode,GlobalTitle,MCC,MNC,Country,Operator,ProductId,MSISDN,IMSI,SIM,eUICCID,CallType,TrafficType,CallForwarding,DestinationName,DestinationType,CallingParty,CalledParty,APN,IPAddress,CallDate,CallTime,Duration,BillableDuration,Bytes,BalanceTypeID,ZoneID,Zone,TotalRetailCharge,WholesaleTAG,MappedIMSI,PropositionAssociated,CommercialOfferPropositionUsed,ChargeNumber,Threshold,ActualUsage,ZoneNameTo,RetailDuration,UsedId,UsedFrom,CELLID,UEIP,UsedType,BillCycleDay,UsedNumber,Device,IMEI,RatingGroupId,PlanName"
+
 # Broker Load SQL for MinIO (S3-compatible)
 broker_name = "s3_broker"
 broker_props = {
@@ -38,7 +40,8 @@ def run_broker_load(**context):
         DATA INFILE(\"{file_path}\")
         INTO TABLE {table_name}
         FORMAT AS \"csv\"
-        (COLUMNS TERMINATED BY ",")
+        COLUMNS TERMINATED BY ","
+        ({column_list})
     )
     WITH BROKER \"{broker_name}\"
     (
