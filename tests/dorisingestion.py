@@ -14,11 +14,15 @@ default_args = {
 }
 
 # Get Doris (StarRocks) connection details from Airflow connection
-conn = BaseHook.get_connection("doris_default")
-doris_user = conn.login
-doris_password = conn.password
-doris_host = conn.host
-doris_port = conn.port
+#conn = BaseHook.get_connection("doris_default")
+# doris_user = conn.login
+# doris_password = conn.password
+# doris_host = conn.host
+# doris_port = conn.port
+doris_user = "test_user"
+doris_password = "password"
+doris_host = "100.94.70.9"
+doris_port = "31161"
 
 # Target table and file details
 db_name = "test"
