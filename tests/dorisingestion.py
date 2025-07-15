@@ -14,7 +14,7 @@ default_args = {
 }
 
 # Get Doris (StarRocks) connection details from Airflow connection
-conn = BaseHook.get_connection("doris_conn")
+conn = BaseHook.get_connection("doris_default")
 doris_user = conn.login
 doris_password = conn.password
 doris_host = conn.host
