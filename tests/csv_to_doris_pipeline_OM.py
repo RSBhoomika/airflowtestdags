@@ -12,11 +12,11 @@ from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 import boto3
 
 # ── S3-compatible GCP settings ────────────────────────────────────
-AWS_ACCESS_KEY_ID = "zKJo2xjFZeGCh4doQ0gy"
-AWS_SECRET_ACCESS_KEY = "WHx2QuvR8hdYooCjowpfHsTOWFtXFsUqPRhO0JuK"
+AWS_ACCESS_KEY_ID = "oE9LqIEqVfPN6BHPraI0D5FGkoSif2hGfQHzU1Kt"
+AWS_SECRET_ACCESS_KEY = "3i9oqhcm1oBVi8vULIEc"
 REGION_NAME = "us-east-1"
-ENDPOINT_URL = "http://35.203.40.184:32010"
-BUCKET_NAME = "minio-data-source"
+ENDPOINT_URL = "http://100.94.70.9:32010"
+BUCKET_NAME = "openmetadata"
 OBJECT_KEY = "minio-source/sales/sales.csv"
 LOCAL_PATH = "/tmp/raw_sales.csv"
 
