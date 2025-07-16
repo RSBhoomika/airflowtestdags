@@ -68,6 +68,22 @@ def upload_to_s3():
         log.error(f"Error running Spark Connect upload job: {e}", exc_info=True)
         raise
 
+def count_rows():
+    logging.basicConfig(level=logging.INFO)
+    log = logging.getLogger(__name__)
+    log.info("Starting Spark Connect count rows job...")
+
+    spark = create_spark_session()
+    try:
+        #log.info(f"Reading parquet data from {S3_PATH}...")
+        df = spark.read.parquet(S3_PATH)
+        #log.info(f"Read parquet completed in {read_time:.2f} seconds")
+
+        row_count = df.count()
+        log.info(f"Row count: {row_count}")
+
+    finally:
+        spark.stop()
 
 with DAG(
     dag_id='pyspark_minio_ingestion_one_million',
@@ -84,6 +100,10 @@ with DAG(
         task_id='upload_to_s3',
         python_callable=upload_to_s3,
     )
-    
 
-    upload_task 
+    count_rows_task = PythonOperator(
+        task_id='count_rows',
+        python_callable=count_rows,
+    )
+
+    upload_task >> count_rows_task
