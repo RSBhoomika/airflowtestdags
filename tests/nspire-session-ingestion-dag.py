@@ -6,6 +6,8 @@ from pyspark.sql import SparkSession
 from pyspark import SparkConf
 import os
 import logging
+import uuid
+import time
 
 default_args = {
     'owner': 'airflow',
@@ -55,9 +57,16 @@ def upload_to_s3():
         row_count = df.count()
         log.info(f"Number of rows: {row_count}")
 
-
+        
         log.info(f"Writing dataframe to S3 location {S3_DESTINATION_PATH} as Parquet ...")
-        df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")
+        df['id'] = [str(uuid.uuid4()) for _ in range(len(df))]
+        #df['file'] = filename
+        df['createTime'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        start_time = time.time()
+        df.write.mode("overwrite").format("parquet").save(S3_DESTINATION_PATH)
+        end_time = time.time()
+        print("Timetaken to write: ", end_time - start_time, "seconds")
+        # df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")
         log.info("Write to S3 completed.")
 
         spark.stop()
