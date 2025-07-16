@@ -49,7 +49,7 @@ def download_and_upload_minio():
     uend_time = time.time()
     print(f"Uploaded {LOCAL_FILE_PATH} to s3://{BUCKET_NAME}/{TARGET_OBJECT_NAME}")
     print("Timetaken to upload: ", uend_time - ustart_time, "seconds")
-
+    print("Upload done")
 # --- Airflow DAG definition ---
 default_args = {
     'owner': 'airflow',
