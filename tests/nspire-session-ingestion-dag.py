@@ -59,7 +59,7 @@ def upload_to_s3():
 
         
         log.info(f"Writing dataframe to S3 location {S3_DESTINATION_PATH} as Parquet ...")
-        df['id'] = [str(uuid.uuid4()) for _ in range(len(df))]
+        df['id'] = str(uuid.uuid4())
         #df['file'] = filename
         df['createTime'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         start_time = time.time()
