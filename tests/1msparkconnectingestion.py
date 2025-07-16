@@ -21,7 +21,7 @@ def create_spark_session():
     os.environ['PATH'] = f"{os.environ['JAVA_HOME']}/bin:" + os.environ['PATH']
     logging.info("Creating Spark Connect session...")
     
-    spark = SparkSession.builder.config(conf=conf) \
+    spark = SparkSession.builder.config() \
     .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
     .config("spark.remote","sc://100.94.70.9:30816")\
     .config("spark.hadoop.fs.s3a.access.key","minio") \
