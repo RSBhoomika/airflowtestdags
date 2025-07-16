@@ -14,7 +14,7 @@ BUCKET_NAME = "airflow-test"
 SOURCE_OBJECT_NAME = "TrafficData.csv"
 TARGET_OBJECT_NAME = "botoingestion/TrafficData.csv"
 
-LOCAL_FILE_PATH = "/opt/airflow/dags/TrafficData.csv"
+LOCAL_FILE_PATH = "/tmp/TrafficData.csv"
 
 def download_and_upload_minio():
     s3_client = boto3.client(
