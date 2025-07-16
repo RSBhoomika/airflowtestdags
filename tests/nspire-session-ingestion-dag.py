@@ -66,7 +66,7 @@ def upload_to_s3():
         df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
         #df['createTime'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         start_time = time.time()
-        df.write.mode("overwrite").format("parquet").save(S3_DESTINATION_PATH)
+        df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")
         end_time = time.time()
         print("Timetaken to write: ", end_time - start_time, "seconds")
         # df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")
