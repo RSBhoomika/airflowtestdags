@@ -52,11 +52,6 @@ def upload_to_s3():
         log.info("Reading CSV file from local filesystem...")
         df = spark.read.option("header", "true").csv("s3a://airflow-test/TrafficData.csv")
         #df = spark.read.option("header", "true").csv("/tmp/10k-data.csv")
-        df.show(5)
-        row_count = df.count()
-        log.info(f"Number of rows: {row_count}")
-
-        log.info(f"Writing dataframe to S3 location {S3_PATH} ...")
         df.write.mode("overwrite").format("parquet").save(S3_PATH)
         #df.write.csv(S3_PATH, mode="overwrite")
         log.info("Write to S3 completed.")
