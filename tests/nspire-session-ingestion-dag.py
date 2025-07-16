@@ -3,6 +3,7 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
 from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 from pyspark import SparkConf
 import os
 import logging
@@ -59,9 +60,11 @@ def upload_to_s3():
 
         
         log.info(f"Writing dataframe to S3 location {S3_DESTINATION_PATH} as Parquet ...")
-        df['id'] = str(uuid.uuid4())
+        #df['id'] = str(uuid.uuid4())
         #df['file'] = filename
-        df['createTime'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        df = df.withColumn('id', F.expr("uuid()"))
+        df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
+        #df['createTime'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         start_time = time.time()
         df.write.mode("overwrite").format("parquet").save(S3_DESTINATION_PATH)
         end_time = time.time()
