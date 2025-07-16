@@ -76,9 +76,9 @@ def count_rows():
 
     spark = create_spark_session()
     try:
-        log.info(f"Reading parquet data from {S3_PATH}...")
+        #log.info(f"Reading parquet data from {S3_PATH}...")
         df = spark.read.parquet(S3_PATH)
-        log.info(f"Read parquet completed in {read_time:.2f} seconds")
+        #log.info(f"Read parquet completed in {read_time:.2f} seconds")
 
         row_count = df.count()
         log.info(f"Row count: {row_count}")
