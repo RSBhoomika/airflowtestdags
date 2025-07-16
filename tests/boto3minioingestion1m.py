@@ -5,6 +5,7 @@ from datetime import datetime
 import boto3
 from boto3.s3.transfer import TransferConfig
 import os
+import csv
 
 # --- Configuration ---
 MINIO_ENDPOINT = "100.94.70.9:31677"  # Replace with your MinIO host
@@ -18,6 +19,11 @@ OBJECT_NAME = "botoingestion/one-million-data.csv"
 
 
 def upload_to_minio():
+    with open(CSV_FILE_PATH, "r") as f:
+        reader = csv.reader(f)
+        row_count = sum(1 for row in reader) - 1  # subtract 1 if there's a header
+    print(f"Row count in CSV file: {row_count}")
+
     s3_client = boto3.client(
         "s3",
         endpoint_url=f"http://{MINIO_ENDPOINT}",
