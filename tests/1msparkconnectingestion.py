@@ -51,17 +51,17 @@ def upload_to_s3():
         spark = create_spark_session()
 
         log.info("Reading CSV file from local filesystem...")
-        rstart_time = time.time()
+        #rstart_time = time.time()
         df = spark.read.option("header", "true").csv("s3a://airflow-test/TrafficData.csv")
-        rend_time = time.time()
-        print("Timetaken to read: ", rend_time - rstart_time, "seconds")
+        #rend_time = time.time()
+        #print("Timetaken to read: ", rend_time - rstart_time, "seconds")
         #df = spark.read.option("header", "true").csv("/tmp/10k-data.csv")
-        wstart_time = time.time()
+        #wstart_time = time.time()
         df.write.mode("overwrite").format("parquet").save(S3_PATH)
-        wend_time = time.time()
+        #wend_time = time.time()
         #df.write.csv(S3_PATH, mode="overwrite")
         log.info("Write to S3 completed.")
-        print("Timetaken to write: ", wend_time - wstart_time, "seconds")
+        #print("Timetaken to write: ", wend_time - wstart_time, "seconds")
 
         spark.stop()
 
@@ -69,6 +69,22 @@ def upload_to_s3():
         log.error(f"Error running Spark Connect upload job: {e}", exc_info=True)
         raise
 
+def count_rows():
+    logging.basicConfig(level=logging.INFO)
+    log = logging.getLogger(__name__)
+    log.info("Starting Spark Connect count rows job...")
+
+    spark = create_spark_session()
+    try:
+        log.info(f"Reading parquet data from {S3_PATH}...")
+        df = spark.read.parquet(S3_PATH)
+        log.info(f"Read parquet completed in {read_time:.2f} seconds")
+
+        row_count = df.count()
+        log.info(f"Row count: {row_count}")
+
+    finally:
+        spark.stop()
 
 with DAG(
     dag_id='spark_connect_minio_ingestion_1mil',
@@ -85,6 +101,11 @@ with DAG(
         task_id='upload_to_s3',
         python_callable=upload_to_s3,
     )
+
+    count_rows_task = PythonOperator(
+        task_id='count_rows',
+        python_callable=count_rows,
+    )
     
 
-    upload_task 
+    upload_task >> count_rows_task
