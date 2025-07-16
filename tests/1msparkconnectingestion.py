@@ -23,7 +23,6 @@ def create_spark_session():
     
     spark = SparkSession.builder.config() \
     .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
-    .config("spark.remote","sc://100.94.70.9:30816")\
     .config("spark.hadoop.fs.s3a.access.key","minio") \
     .config("spark.hadoop.fs.s3a.secret.key", "minio123") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
