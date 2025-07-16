@@ -4,6 +4,7 @@ from datetime import datetime
 import boto3
 from boto3.s3.transfer import TransferConfig
 import os
+import time
 
 # --- Configuration ---
 MINIO_ENDPOINT = "100.94.70.9:31677"
@@ -26,8 +27,10 @@ def download_and_upload_minio():
     
     # Download the file locally
     print(f"Downloading s3://{BUCKET_NAME}/{SOURCE_OBJECT_NAME} to {LOCAL_FILE_PATH}")
+    dstart_time = time.time()
     s3_client.download_file(BUCKET_NAME, SOURCE_OBJECT_NAME, LOCAL_FILE_PATH)
-    print("Download complete.")
+    dend_time = time.time()
+    print("Timetaken to download: ", dend_time - dstart_time, "seconds")
     
     # Upload the file to new folder in same bucket
     config = TransferConfig(
@@ -36,14 +39,16 @@ def download_and_upload_minio():
         multipart_chunksize=10 * 1024 * 1024,
         use_threads=True
     )
-    
+    ustart_time = time.time()
     s3_client.upload_file(
         LOCAL_FILE_PATH,
         BUCKET_NAME,
         TARGET_OBJECT_NAME,
         Config=config
     )
+    uend_time = time.time()
     print(f"Uploaded {LOCAL_FILE_PATH} to s3://{BUCKET_NAME}/{TARGET_OBJECT_NAME}")
+    print("Timetaken to upload: ", uend_time - ustart_time, "seconds")
 
 # --- Airflow DAG definition ---
 default_args = {
