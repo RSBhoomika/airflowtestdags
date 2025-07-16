@@ -54,7 +54,7 @@ def upload_to_s3():
         rstart_time = time.time()
         df = spark.read.option("header", "true").csv("s3a://airflow-test/TrafficData.csv")
         rend_time = time.time()
-        print("Timetaken to read: ", end_time - start_time, "seconds")
+        print("Timetaken to read: ", rend_time - rstart_time, "seconds")
         #df = spark.read.option("header", "true").csv("/tmp/10k-data.csv")
         wstart_time = time.time()
         df.write.mode("overwrite").format("parquet").save(S3_PATH)
