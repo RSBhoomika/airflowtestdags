@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pyspark.sql import SparkSession
 import logging
 import os
+import time
 
 default_args = {
     'owner': 'airflow',
@@ -49,9 +50,15 @@ def upload_to_s3():
         spark = create_spark_session()
 
         log.info("Reading CSV file from local filesystem...")
+        start_time = time.time()
         df = spark.read.option("header", "true").csv("s3a://airflow-test/TrafficData.csv")
+        end_time = time.time()
+        print("Timetaken to read: ", end_time - start_time, "seconds")
         #df = spark.read.option("header", "true").csv("/tmp/10k-data.csv")
+        wstart_time = time.time()
         df.write.mode("overwrite").format("parquet").save(S3_PATH)
+        wend_time = time.time()
+        print("Timetaken to write: ", wend_time - wstart_time, "seconds")
         #df.write.csv(S3_PATH, mode="overwrite")
         log.info("Write to S3 completed.")
 
