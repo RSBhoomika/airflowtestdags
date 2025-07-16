@@ -31,9 +31,9 @@ def download_and_upload_minio():
     
     # Upload the file to new folder in same bucket
     config = TransferConfig(
-        multipart_threshold=5 * 1024 * 1024,
+        multipart_threshold=10 * 1024 * 1024,
         max_concurrency=10,
-        multipart_chunksize=5 * 1024 * 1024,
+        multipart_chunksize=10 * 1024 * 1024,
         use_threads=True
     )
     
