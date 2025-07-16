@@ -23,6 +23,7 @@ def create_spark_session():
     
     spark = SparkSession.builder \
     .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
+    .config("spark.remote","sc://100.94.70.9:30816")\
     .config("spark.hadoop.fs.s3a.access.key","minio") \
     .config("spark.hadoop.fs.s3a.secret.key", "minio123") \
     .config("spark.hadoop.fs.s3a.path.style.access", "true") \
@@ -63,7 +64,7 @@ def upload_to_s3():
 
 
 with DAG(
-    dag_id='spark_connect_minio_ingestion_one_million',
+    dag_id='spark_connect_minio_ingestion_1mil',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete using Spark Connect',
     schedule_interval=None,
