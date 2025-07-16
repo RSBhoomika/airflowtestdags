@@ -29,7 +29,7 @@ def create_spark_session():
     .config("spark.hadoop.fs.s3a.endpoint", "http://100.94.70.9:31677") \
     .config("mapreduce.fileoutputcommitter.algorithm.version", "2") \
     .config("fs.s3a.committer.staging.conflict-mode", "replace") \
-        .config("fs.s3a.fast.upload", "true") \
+    .config("fs.s3a.fast.upload", "true") \
     .config("fs.s3a.fast.upload.buffer", "disk") \
     .config("fs.s3a.threads.max", "20") \
     .config("fs.s3a.multipart.size", "512M") \
