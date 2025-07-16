@@ -31,7 +31,7 @@ def download_and_upload_minio():
     s3_client.download_file(BUCKET_NAME, SOURCE_OBJECT_NAME, LOCAL_FILE_PATH)
     dend_time = time.time()
     print("Timetaken to download: ", dend_time - dstart_time, "seconds")
-    
+    print("download done")
     # Upload the file to new folder in same bucket
     config = TransferConfig(
         multipart_threshold=10 * 1024 * 1024,
