@@ -3,10 +3,12 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime
 from connectors.Doris_hook_connector import DorisHook
 
+
 default_args = {
-    'owner': 'airflow',
-    'start_date': datetime(2024, 1, 1),
-    'retries': 1
+    "owner": "airflow",
+    "start_date": datetime(2025, 1, 1),
+    "retries": 0,
+    "depends_on_past": False,
 }
 
 def load_trafficdata_to_doris(**context):
