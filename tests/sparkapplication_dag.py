@@ -19,7 +19,7 @@ with DAG(
    default_args=default_args,
    description='Read in csv format Write in iceberg format',
    schedule_interval=None,
-   start_date=datetime(2025, 7, 178),
+   start_date=datetime(2025, 7, 18),
    catchup=False,
    tags=['example']
 ) as dag:
