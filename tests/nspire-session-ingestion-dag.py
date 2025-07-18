@@ -17,8 +17,8 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 
-S3_SOURCE_PATH = "s3a://vaz-source-data/nspire/input_files/"
-S3_DESTINATION_PATH = "s3a://vaz/nspire/sessions/"
+S3_SOURCE_PATH = "s3a://vaz-source-data/nspire/repository/feed_aggs/"
+S3_DESTINATION_PATH = "s3a://vaz/nspire/feed_aggs/"
 
 
 def create_spark_session():
