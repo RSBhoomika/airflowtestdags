@@ -30,8 +30,5 @@ with DAG(
        retries=3,
        application_file="spark.yaml",
        namespace="default",
-       api_group="sparkoperator.k8s.io",
-       api_version="v1beta2",
        do_xcom_push=True,
-       dag=dag
    )
