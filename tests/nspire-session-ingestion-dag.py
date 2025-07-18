@@ -27,7 +27,7 @@ def create_spark_session():
 
     conf = SparkConf().setAppName("AirflowPySparkJob")
     spark = SparkSession.builder.config(conf=conf) \
-        .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
+        .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4,org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.3.0') \
         .config("spark.hadoop.fs.s3a.access.key", "minio") \
         .config("spark.hadoop.fs.s3a.secret.key", "minio123") \
         .config("spark.hadoop.fs.s3a.path.style.access", "true") \
@@ -66,7 +66,8 @@ def upload_to_s3():
         df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
         #df['createTime'] = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         start_time = time.time()
-        df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")
+        df.write.format("iceberg").mode("overwrite").save(S3_DESTINATION_PATH)
+        # df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")
         end_time = time.time()
         print("Timetaken to write: ", end_time - start_time, "seconds")
         # df.write.parquet(S3_DESTINATION_PATH, mode="overwrite")

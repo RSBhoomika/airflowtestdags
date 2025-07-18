@@ -74,7 +74,7 @@ def create_spark_session():
     os.environ['PATH'] = f"{os.environ['JAVA_HOME']}/bin:" + os.environ['PATH']
     conf = SparkConf().setAppName("AirflowPySparkJob")
     spark = SparkSession.builder.config(conf=conf) \
-        .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4') \
+        .config('spark.jars.packages', 'org.apache.hadoop:hadoop-aws:3.3.4,org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.3.0') \
         .config("spark.hadoop.fs.s3a.access.key", "minio") \
         .config("spark.hadoop.fs.s3a.secret.key", "minio123") \
         .config("spark.hadoop.fs.s3a.path.style.access", "true") \
