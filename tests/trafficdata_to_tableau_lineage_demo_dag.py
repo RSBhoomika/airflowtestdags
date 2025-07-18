@@ -12,7 +12,7 @@ default_args = {
 }
 
 def load_trafficdata_to_doris(**context):
-        doris = DorisHook(conn_id="doris_default")
+        doris = DorisHook(conn_id="doris_demo")
         tablename = "trafficdata"
         doris.run_sql(f"TRUNCATE TABLE demo_database.{tablename}")
         doris.brokerload_data(
