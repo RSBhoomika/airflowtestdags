@@ -22,7 +22,7 @@ columns = """CDRId, CDRVersion, CompanyIntID, CompanyName, InvoiceNumber, Busine
 def load_trafficdata_to_doris(**context):
         doris = DorisHook(conn_id="doris_demo")
         tablename = "traffic_data"
-        doris.run_sql(f"TRUNCATE TABLE demo_database.{tablename}")
+        doris.run_sql(f"TRUNCATE TABLE test.{tablename}")
         doris.brokerload_data(
             table_name=tablename,
             s3_path="s3://openmetadata/minio-source/TrafficData/TrafficData.csv",
