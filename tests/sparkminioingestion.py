@@ -129,7 +129,7 @@ def upload_to_s3():
         """).show()
 
         log.info("Reading CSV files from S3...")
-        df = spark.read.option("header", "true").csv("s3a://airflow-test/TrafficData.csv")
+        df = spark.read.option("header", "true").csv("s3a://500k-data/500k-data.csv")
         df.show(5)
 
         log.info("Writing DataFrame to Iceberg table...")
