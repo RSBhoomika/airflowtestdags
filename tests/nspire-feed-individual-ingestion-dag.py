@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 from pyspark import SparkConf
+from pyspark.sql.types import DoubleType, IntegerType
+
 import os
 import logging
 import uuid
@@ -62,11 +64,24 @@ def upload_to_s3():
         log.info(f"Number of rows: {row_count}")
 
         
+
         log.info(f"Writing dataframe to Iceberg table nspire_catalog.feed_individual ...")
         df = df.withColumn('id', F.expr("uuid()"))
         df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
+
+        # Cast columns to match Iceberg schema
+        df = df.withColumn("cell_latitude", df["cell_latitude"].cast(DoubleType()))
+        df = df.withColumn("cell_longitude", df["cell_longitude"].cast(DoubleType()))
+        df = df.withColumn("rx_qual", df["rx_qual"].cast(IntegerType()))
+        df = df.withColumn("rx_lev", df["rx_lev"].cast(IntegerType()))
+        df = df.withColumn("serving_rsrp", df["serving_rsrp"].cast(IntegerType()))
+        df = df.withColumn("serving_rsrq", df["serving_rsrq"].cast(IntegerType()))
+        df = df.withColumn("latency", df["latency"].cast(IntegerType()))
+        df = df.withColumn("qos_rating", df["qos_rating"].cast(IntegerType()))
+        df = df.withColumn("latitude", df["latitude"].cast(DoubleType()))
+        df = df.withColumn("longitude", df["longitude"].cast(DoubleType()))
+
         start_time = time.time()
-        #df.writeTo("nspire_catalog.feed_individual").overwrite()
         df.writeTo("nspire_catalog.feed_individual").overwritePartitions()
         end_time = time.time()
         print("Timetaken to write: ", end_time - start_time, "seconds")
