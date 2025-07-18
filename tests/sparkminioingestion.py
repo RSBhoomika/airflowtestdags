@@ -6,6 +6,7 @@ from pyspark.sql import SparkSession
 from pyspark import SparkConf
 import os
 import logging
+import time
 
 default_args = {
     'owner': 'airflow',
