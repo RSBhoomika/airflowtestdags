@@ -34,14 +34,14 @@ def load_trafficdata_to_doris(**context):
         )
 
 def emit_trafficdata_lineage(**context):
-    # Clean + map columns
     column_list = [col.strip() for col in columns.split(",") if col.strip()]
-    # We assume source and target columns are same here
+    print(f"Emitting lineage for columns: {column_list}")
     emit_lineage_to_om(
         source_fqn="openmetadata-minio.openmetadata.minio-source/TrafficData",
         target_fqn="doris.default.demo_database.traffic_data",
+        source_type="container",
+        target_type="table",
         column_mappings=column_list
-        print(column_mappings)
     )
 
 with DAG(

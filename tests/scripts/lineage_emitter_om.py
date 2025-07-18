@@ -1,7 +1,9 @@
 def emit_lineage_to_om(
     source_fqn: str,
     target_fqn: str,
-    column_mappings: list  # mixed: ["col1", ("col2", "target_col2"), ...]
+    source_type: str,
+    target_type: str,
+    column_mappings: list
 ):
     from metadata.generated.schema.security.client.openMetadataJWTClientConfig import OpenMetadataJWTClientConfig
     from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import OpenMetadataConnection
@@ -11,7 +13,14 @@ def emit_lineage_to_om(
     from metadata.generated.schema.api.lineage.addLineage import AddLineageRequest
     from metadata.generated.schema.type.entityLineage import EntitiesEdge, ColumnLineage, LineageDetails
     from metadata.generated.schema.type.entityReference import EntityReference
+    entity_type_map = {
+        "table": Table,
+        "container": Container,
+        # add others like "pipeline", "dashboard" etc. as needed
+    }
 
+    if source_type not in entity_type_map or target_type not in entity_type_map:
+        raise ValueError(f"Unsupported source/target entity types: {source_type}, {target_type}")
     # Static JWT token (keep secure)
     server_config = OpenMetadataConnection(
         hostPort="http://100.94.70.9:32325/api",
@@ -24,8 +33,8 @@ def emit_lineage_to_om(
     metadata = OpenMetadata(server_config)
 
     # Fetch entities
-    source = metadata.get_by_name(entity=Container, fqn=source_fqn)
-    target = metadata.get_by_name(entity=Table, fqn=target_fqn)
+    source = metadata.get_by_name(entity=entity_type_map[source_type], fqn=source_fqn)
+    target = metadata.get_by_name(entity=entity_type_map[target_type], fqn=target_fqn)
 
     if not source or not target:
         raise ValueError(f"Source or target not found. source={source}, target={target}")
@@ -53,8 +62,8 @@ def emit_lineage_to_om(
     lineage_details = LineageDetails(columnsLineage=column_lineage_list)
     add_lineage_request = AddLineageRequest(
         edge=EntitiesEdge(
-            fromEntity=EntityReference(id=source.id, type="container"),
-            toEntity=EntityReference(id=target.id, type="table"),
+            fromEntity=EntityReference(id=source.id, type=source_type),
+            toEntity=EntityReference(id=target.id, type=target_type),
             lineageDetails=lineage_details,
         )
     )
