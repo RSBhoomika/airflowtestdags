@@ -18,11 +18,7 @@ spec:
   driver:
     cores: 2
     memory: 2000m
-    labels:
-      app: spark-pi
     volumeMounts:
-        - mountPath: /test  # Path where the volume will be mounted in the container
-          name: benchmark-files-volume
         - name: iceberg-script
           mountPath: /test
     serviceAccount: spark-operator-spark
@@ -30,15 +26,11 @@ spec:
     instances: 2
     cores: 20
     memory: 28000m
-    labels:
-      app: spark-pi
     volumeMounts:
-        - mountPath: /test  # Path where the volume will be mounted in the container
-          name: benchmark-files-volume
         - name: iceberg-script
           mountPath: /test
   volumes:
-    - name: benchmark-files-volume
-      persistentVolumeClaim:
-        claimName: benchmark-files-pvc
+    - name: iceberg-script
+      configMap:
+        name: iceberg-script
 
