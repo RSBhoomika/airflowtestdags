@@ -27,7 +27,7 @@ doris_port = "31161"
 # Target table and file details
 db_name = "test"
 table_name = "table1"
-file_path = "/opt/airflow/dags/repo/tests/10k_data.csv"
+file_path = "/opt/airflow/dags/repo/tests/500k-data.csv"
 
 # Define truncate function using mysql-connector-python
 def truncate_table():
@@ -50,11 +50,11 @@ def truncate_table():
 
 # Define DAG
 with DAG(
-    dag_id='doris_streamload_sleep_truncate',
+    dag_id='doris_streamload_sleep_truncate_500k',
     default_args=default_args,
     schedule_interval='*/5 * * * *', 
     #schedule_interval=None,
-    start_date=datetime(2025, 7, 11),
+    start_date=datetime(2025, 7, 18),
     #end_date=datetime(2025, 7, 14),    # Stop after 3 days
     catchup=False,
     description='Truncate Doris table and stream load every 5 mins for 3 days',

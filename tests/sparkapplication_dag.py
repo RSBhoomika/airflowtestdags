@@ -8,23 +8,23 @@ from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOpera
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2025, 7, 17),
+    'start_date': datetime(2025, 7, 18),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
 
 
 with DAG(
-   'my-second-dag',
+   'spark-application-dag',
    default_args=default_args,
-   description='simple dag',
+   description='Read in csv format Write in iceberg format',
    schedule_interval=None,
-   start_date=datetime(2025, 7, 17),
+   start_date=datetime(2025, 7, 178),
    catchup=False,
    tags=['example']
 ) as dag:
    t1 = SparkKubernetesOperator(
-       task_id='n-spark-pi',
+       task_id='spark-kubernetes-job',
        trigger_rule="all_success",
        depends_on_past=False,
        retries=3,
