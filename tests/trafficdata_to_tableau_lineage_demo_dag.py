@@ -11,8 +11,10 @@ default_args = {
 
 def load_trafficdata_to_doris(**context):
         doris = DorisHook(conn_id="doris_default")
+        tablename = "trafficdata"
+        doris.run_sql(f"TRUNCATE TABLE demo_database.{tablename}")
         doris.brokerload_data(
-            table_name="trafficdata",
+            table_name=tablename,
             s3_path="s3://airflow-test/TrafficData.csv",
             columns= """CDRId, CDRVersion, CompanyIntID, CompanyName, InvoiceNumber, BusinessUnitLevel, BusinessUnit, BusinessUnitTAG, SharedBalanceUsed,
             DepartmentID, DepartmentName, CostCenterID, CostCenterName, AccountNumber, CustomerNumber, InvoicePeriod, TadigCode, GlobalTitle,
