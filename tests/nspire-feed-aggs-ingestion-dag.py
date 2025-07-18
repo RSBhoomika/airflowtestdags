@@ -62,11 +62,32 @@ def upload_to_s3():
         log.info(f"Number of rows: {row_count}")
 
         
+
         log.info(f"Writing dataframe to Iceberg table nspire_catalog.feed_aggs ...")
+        from pyspark.sql.types import DoubleType, IntegerType
+        # Add missing columns from table schema if not present in DataFrame
+        table_columns = [
+            "datetime", "global_cell_id", "cell_latitude", "cell_longitude", "rx_qual", "rx_lev", "serving_rsrp", "serving_rsrq", "latency", "qos_rating", "id", "createTime"
+        ]
+        for col in table_columns:
+            if col not in df.columns:
+                df = df.withColumn(col, F.lit(None))
+        # Only keep columns in table schema, in order
+        df = df.select(*table_columns)
+        # Add id and createTime
         df = df.withColumn('id', F.expr("uuid()"))
         df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
+        # Cast columns to match Iceberg schema
+        df = df.withColumn("cell_latitude", df["cell_latitude"].cast(DoubleType()))
+        df = df.withColumn("cell_longitude", df["cell_longitude"].cast(DoubleType()))
+        df = df.withColumn("rx_qual", df["rx_qual"].cast(IntegerType()))
+        df = df.withColumn("rx_lev", df["rx_lev"].cast(IntegerType()))
+        df = df.withColumn("serving_rsrp", df["serving_rsrp"].cast(IntegerType()))
+        df = df.withColumn("serving_rsrq", df["serving_rsrq"].cast(IntegerType()))
+        df = df.withColumn("latency", df["latency"].cast(IntegerType()))
+        df = df.withColumn("qos_rating", df["qos_rating"].cast(IntegerType()))
         start_time = time.time()
-        df.writeTo("nspire_catalog.feed_aggs").overwrite()
+        df.writeTo("nspire_catalog.feed_aggs").overwritePartitions()
         end_time = time.time()
         print("Timetaken to write: ", end_time - start_time, "seconds")
         log.info("Write to Iceberg table completed.")
