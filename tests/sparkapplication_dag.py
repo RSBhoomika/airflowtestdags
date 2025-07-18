@@ -29,6 +29,5 @@ with DAG(
        depends_on_past=False,
        retries=3,
        application_file="spark.yaml",
-       namespace="default",
-       do_xcom_push=True,
+       namespace="default"
    )
