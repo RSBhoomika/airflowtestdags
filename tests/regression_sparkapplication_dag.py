@@ -8,7 +8,7 @@ from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOpera
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2025, 7, 19),
+    'start_date': datetime(2025, 7, 18),
     'retries': 1,
     'retry_delay': timedelta(minutes=1),
 }
@@ -19,7 +19,7 @@ with DAG(
    default_args=default_args,
    description='Read in csv format Write in iceberg format Delete iceberg dataset',
    schedule_interval='*/5 * * * *',
-   start_date=datetime(2025, 7, 19),
+   start_date=datetime(2025, 7, 18),
    catchup=False,
    tags=['example']
 ) as dag:
