@@ -72,6 +72,7 @@ with DAG(
         task_id='stream_load_to_doris',
         bash_command=f"""
         curl --location-trusted -u {doris_user}:{doris_password} -T {file_path} \\
+          -H "compress_type:gz" \\
           -H "Expect: 100-continue" \\
           -H "max_filter_ratio: 0.1" \\
           -H "label: stream_load_{{{{ ts_nodash }}}}" \\
