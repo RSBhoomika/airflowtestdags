@@ -1,3 +1,5 @@
+import datetime
+import time
 from airflow.hooks.base import BaseHook
 import pandas as pd
 import pymysql
@@ -122,3 +124,73 @@ class DorisHook(BaseHook):
                  return None
      finally:
          conn.close()
+    
+    def brokerload_data(self, table_name: str, s3_path: str, columns: str, s3endpoint: str, s3access_key: str, s3secret_key: str, context=None):
+        conn = None
+        cursor = None
+        try:
+            conn = pymysql.connect(
+                host=self.host,
+                port=self.port,
+                user=self.login,
+                password=self.password,
+                database=self.schema
+            )
+            cursor = conn.cursor()
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            label = f"{table_name}_load_{timestamp}"
+            database = self.schema
+
+            query = f"""
+            LOAD LABEL {database}.{label} (
+                DATA INFILE('{s3_path}')
+                INTO TABLE {table_name}
+                COLUMNS TERMINATED BY ','
+                ({columns})
+            )
+            WITH S3 (
+                "s3.endpoint" = "{s3endpoint}",
+                "s3.access_key" = "{s3access_key}",
+                "s3.secret_key" = "{s3secret_key}",
+                "format" = "csv",
+                "s3.use_aws_sdk_default_behavior" = "false",
+                "s3.region" = "us-east-1",
+                "enable_ssl" = "false",
+                "use_instance_profile" = "false",
+                "use_path_style_access" = "true",
+                "s3.multi_part_size" = "512MB",
+                "s3.request_timeout_ms" = "120000"
+            )
+            PROPERTIES (
+                "timeout" = "21600",
+                "max_filter_ratio" = "0.1",
+                "strict_mode" = "false",
+                "load_parallelism" = "16",
+                "send_batch_parallelism" = "4",
+                "skip_lines" = "0",
+                "priority" = "HIGH"
+            );
+            """
+
+            print(f"Generated LABEL: {label}")
+            print(f"Executing query: {query}")
+            start_time = time.time()
+            cursor.execute(query)
+            result = cursor.fetchall()
+            end_time = time.time()
+            print(f"Execution time: {end_time - start_time:.6f} seconds")
+
+            # Push label to XCom if context is provided
+            if context:
+                context['ti'].xcom_push(key='load_label', value=label)
+                print(f"Pushed to XCom: key='load_label', value='{label}'")
+
+        except Exception as e:
+            print(f"[ERROR] Failed to execute load: {e}")
+            raise
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
