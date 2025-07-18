@@ -27,7 +27,7 @@ doris_port = "31161"
 # Target table and file details
 db_name = "test"
 table_name = "table1"
-file_path = "/opt/airflow/dags/repo/tests/500k-data.csv"
+file_path = "/opt/airflow/dags/repo/tests/500k-data.csv.gz"
 
 # Define truncate function using mysql-connector-python
 def truncate_table():
