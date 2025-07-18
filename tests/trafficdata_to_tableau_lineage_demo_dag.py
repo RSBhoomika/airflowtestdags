@@ -30,7 +30,8 @@ def load_trafficdata_to_doris(**context):
             s3endpoint="http://100.94.70.9:31677",
             s3access_key="minio",
             s3secret_key="minio123",
-            context=context
+            context=context,
+            database="test"
         )
 
 def emit_trafficdata_lineage(**context):

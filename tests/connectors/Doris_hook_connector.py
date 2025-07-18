@@ -125,21 +125,21 @@ class DorisHook(BaseHook):
      finally:
          conn.close()
     
-    def brokerload_data(self, table_name: str, s3_path: str, columns: str, s3endpoint: str, s3access_key: str, s3secret_key: str, context=None):
+    def brokerload_data(self, table_name: str, s3_path: str, columns: str, s3endpoint: str, s3access_key: str, s3secret_key: str, context=None, database: str = ""):
         conn = None
         cursor = None
         try:
+            database = database or self.schema
             conn = pymysql.connect(
                 host=self.host,
                 port=self.port,
                 user=self.login,
                 password=self.password,
-                database=self.schema
+                database=database
             )
             cursor = conn.cursor()
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             label = f"{table_name}_load_{timestamp}"
-            database = self.schema
 
             query = f"""
             LOAD LABEL {database}.{label} (
