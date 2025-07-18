@@ -54,7 +54,7 @@ with DAG(
     default_args=default_args,
     schedule_interval='*/5 * * * *', 
     #schedule_interval=None,
-    start_date=datetime(2025, 7, 18),
+    start_date=datetime(2025, 7, 19),
     #end_date=datetime(2025, 7, 14),    # Stop after 3 days
     catchup=False,
     description='Truncate Doris table and stream load every 5 mins for 3 days',
