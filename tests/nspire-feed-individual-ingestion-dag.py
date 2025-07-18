@@ -66,9 +66,20 @@ def upload_to_s3():
         
 
         log.info(f"Writing dataframe to Iceberg table nspire_catalog.feed_individual ...")
+  
+        # Add missing columns from table schema if not present in DataFrame
+        # TBD - Get the columns from table itself.
+        table_columns = [
+            "datetime", "iccid", "imsi", "imei", "technology", "global_cell_id", "mcc", "mnc", "lac", "cell_id", "tac", "eci", "cell_latitude", "cell_longitude", "rx_qual", "rx_lev", "serving_ecno", "serving_rscp", "serving_rsrp", "serving_rsrq", "latency", "qos_rating", "latitude", "longitude", "id", "createTime"
+        ]
+        for col in table_columns:
+            if col not in df.columns:
+                df = df.withColumn(col, F.lit(None))
+        # Only keep columns in table schema, in order
+        df = df.select(*table_columns)
+        # Add id and createTime
         df = df.withColumn('id', F.expr("uuid()"))
         df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
-
         # Cast columns to match Iceberg schema
         df = df.withColumn("cell_latitude", df["cell_latitude"].cast(DoubleType()))
         df = df.withColumn("cell_longitude", df["cell_longitude"].cast(DoubleType()))
@@ -80,7 +91,6 @@ def upload_to_s3():
         df = df.withColumn("qos_rating", df["qos_rating"].cast(IntegerType()))
         df = df.withColumn("latitude", df["latitude"].cast(DoubleType()))
         df = df.withColumn("longitude", df["longitude"].cast(DoubleType()))
-
         start_time = time.time()
         df.writeTo("nspire_catalog.feed_individual").overwritePartitions()
         end_time = time.time()
