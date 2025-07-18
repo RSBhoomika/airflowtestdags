@@ -21,7 +21,7 @@ class DorisHook(BaseHook):
             host=self.host,
             port=self.port,
             user=self.login,
-            password='',
+            password=self.password,
             database=self.schema
         )
         df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
@@ -44,12 +44,15 @@ class DorisHook(BaseHook):
         headers = {
             "Content-Type": "text/csv"
         }
-        password = ''
+        
+        # Prepare auth with connection password only if password is set else use empty string
+        auth = (self.login, self.password) if self.password else (self.login, '')
+
         response = requests.put(
             url,
             headers=headers,
             data=csv_data.getvalue(),
-            auth=(self.login, password)
+            auth=auth
         )
 
         if response.status_code != 200:
