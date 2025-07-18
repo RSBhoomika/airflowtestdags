@@ -16,6 +16,8 @@ spec:
   mainApplicationFile: local:///test/iceberg_write_wbs_data.py
   sparkVersion: 3.5.1
   driver:
+    labels:
+      app: spark-pi
     cores: 2
     memory: 2000m
     volumeMounts:
@@ -23,6 +25,8 @@ spec:
           mountPath: /test
     serviceAccount: spark-operator-spark
   executor:
+    labels:
+      app: spark-pi
     instances: 2
     cores: 20
     memory: 28000m
