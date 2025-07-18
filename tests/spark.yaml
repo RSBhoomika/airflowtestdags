@@ -1,0 +1,40 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-pi-python
+spec:
+  deps:
+    jars:
+      - https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.7.1/iceberg-spark-runtime-3.5_2.12-1.7.1.jar
+      - https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
+      - https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: docker.io/library/spark:3.5.1
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: local:///test/iceberg_write_wbs_data.py
+  sparkVersion: 3.5.1
+  driver:
+    cores: 2
+    memory: 2000m
+    volumeMounts:
+        - mountPath: /test  # Path where the volume will be mounted in the container
+          name: benchmark-files-volume
+        - name: iceberg-script
+          mountPath: /test
+    serviceAccount: spark-operator-spark
+  executor:
+    instances: 2
+    cores: 20
+    memory: 28000m
+    volumeMounts:
+        - mountPath: /test  # Path where the volume will be mounted in the container
+          name: benchmark-files-volume
+        - name: iceberg-script
+          mountPath: /test
+  volumes:
+    - name: benchmark-files-volume
+      persistentVolumeClaim:
+        claimName: benchmark-files-pvc
+
