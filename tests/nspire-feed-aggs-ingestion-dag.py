@@ -17,8 +17,8 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
 }
 
-S3_SOURCE_PATH = "s3a://vaz-source-data/nspire/repository/feed_individual/"
-S3_DESTINATION_PATH = "s3a://vaz/nspire/feed_individual/"
+S3_SOURCE_PATH = "s3a://vaz-source-data/nspire/repository/feed_aggs/"
+S3_DESTINATION_PATH = "s3a://vaz/nspire/feed_aggs/"
 
 
 def create_spark_session():
@@ -62,11 +62,11 @@ def upload_to_s3():
         log.info(f"Number of rows: {row_count}")
 
         
-        log.info(f"Writing dataframe to Iceberg table nspire_catalog.feed_individual ...")
+        log.info(f"Writing dataframe to Iceberg table nspire_catalog.feed_aggs ...")
         df = df.withColumn('id', F.expr("uuid()"))
         df = df.withColumn('createTime', F.lit(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')))
         start_time = time.time()
-        df.writeTo("nspire_catalog.feed_individual").overwrite()
+        df.writeTo("nspire_catalog.feed_aggs").overwrite()
         end_time = time.time()
         print("Timetaken to write: ", end_time - start_time, "seconds")
         log.info("Write to Iceberg table completed.")
@@ -78,7 +78,7 @@ def upload_to_s3():
         raise
 
 with DAG(
-    dag_id='nspire-feed-individual-ingestion-dag',
+    dag_id='nspire-feed-aggs-ingestion-dag',
     default_args=default_args,
     description='Upload CSV to S3, sleep 20s, then delete',
     schedule_interval=None,

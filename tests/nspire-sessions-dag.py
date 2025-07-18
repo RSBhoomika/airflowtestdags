@@ -83,6 +83,9 @@ def create_spark_session():
         .config("spark.hadoop.fs.s3a.connection.timeout", "60000") \
         .config("spark.hadoop.fs.s3a.attempts.maximum", "3") \
         .config("spark.hadoop.fs.s3a.retry.interval", "1000ms") \
+        .config("spark.sql.catalog.nspire_catalog", "org.apache.iceberg.spark.SparkCatalog") \
+        .config("spark.sql.catalog.nspire_catalog.type", "hadoop") \
+        .config("spark.sql.catalog.nspire_catalog.warehouse", "s3a://vaz/nspire/") \
         .getOrCreate()
     return spark
 
@@ -121,9 +124,9 @@ def join_and_ingest_to_doris():
     log.info("Starting Spark join and Doris ingestion job...")
     try:
         spark = create_spark_session()
-        feed_individual = spark.read.format("iceberg").load(FEED_INDIVIDUAL_PATH)
-        feed_aggs = spark.read.format("iceberg").load(FEED_AGGS_PATH)
-        log.info("Read feed_individual and feed_aggs tables.")
+        feed_individual = spark.read.format("iceberg").load("nspire_catalog.feed_individual")
+        feed_aggs = spark.read.format("iceberg").load("nspire_catalog.feed_aggs")
+        log.info("Read feed_individual and feed_aggs tables from nspire_catalog.")
         joined = feed_individual.join(feed_aggs, on="global_cell_id", how="inner")
         log.info(f"Joined DataFrame count: {joined.count()}")
         # Convert to Pandas DataFrame for stream load
