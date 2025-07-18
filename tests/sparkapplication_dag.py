@@ -1,13 +1,10 @@
 from airflow import DAG
 from datetime import timedelta, datetime
-from airflow.providers.cncf.kubernetes.operators.spark_kubernetes 
-import SparkKubernetesOperator
-from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes 
-import SparkKubernetesSensor
+from airflow.providers.cncf.kubernetes.operators.spark_kubernetes import SparkKubernetesOperator
+from airflow.providers.cncf.kubernetes.sensors.spark_kubernetes import SparkKubernetesSensor
 from airflow.models import Variable
 from kubernetes.client import models as k8s
-from airflow.contrib.operators.kubernetes_pod_operator 
-import KubernetesPodOperator
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 
 default_args = {
     'owner': 'airflow',
